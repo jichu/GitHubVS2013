@@ -30,7 +30,7 @@ namespace __EGG__app_bci_emo_ev3
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            AllocConsole();
+            //AllocConsole();
             drawEngine = new DrawEngine();
 
             initBrain();
@@ -100,13 +100,13 @@ namespace __EGG__app_bci_emo_ev3
         private void timerMain_Tick(object sender, EventArgs e)
         {
             labelLog.Text = "";
-
+            /*
             for (int i = 0; i < 18; i++)
             {
                 string key = B.getChannelNames()[i];
                 labelLog.Text += key + ": "+ B.getContactQualityDictionary()[key] + Environment.NewLine;
             }
-
+            */
             labelLog.Text += B.GetUserID().ToString()+Environment.NewLine;
             foreach (KeyValuePair<EdkDll.EE_DataChannel_t,double[]> item in B.getEEGData())
             {
@@ -123,6 +123,7 @@ namespace __EGG__app_bci_emo_ev3
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            threadB.Abort();
             I.stop();
         }
 

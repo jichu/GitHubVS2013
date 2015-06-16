@@ -41,7 +41,7 @@ namespace __EGG__app_bci_emo_ev3
         private Point[] point = new Point[14];
         private Dictionary<string, string> qualitySignalData = new Dictionary<string, string>();
         public bool connect = false; 
-        private string[] channelNames;
+        private string[] channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" }; 
 
         public DrawEngine()
         {
@@ -129,8 +129,6 @@ namespace __EGG__app_bci_emo_ev3
             point[11].X = -4; point[11].Y = -3; // F7
             point[12].X = -2; point[12].Y = -4; // AF3
             point[13].X = -1; point[13].Y = -3; // F3
-            // nazvy kanalu
-            channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" }; 
         }
 
         // hlavni­ render smycka
@@ -191,7 +189,8 @@ namespace __EGG__app_bci_emo_ev3
             {
                 int x = point[i].X * zoom + offsetX;
                 int y = point[i].Y * zoom + offsetY;
-                dPointSenzor(x, y, 10, qualitySignalData[channelNames[i]]);
+                if(qualitySignalData.Count>1)
+                    dPointSenzor(x, y, 10, qualitySignalData[this.channelNames[i]]);
             }
         }
 
