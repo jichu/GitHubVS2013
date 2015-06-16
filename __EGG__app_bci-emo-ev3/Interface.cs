@@ -36,8 +36,7 @@ namespace __EGG__app_bci_emo_ev3
         {
             while (true)
             {
-                Console.WriteLine(0);
-                System.Threading.Thread.Sleep(20);
+                System.Threading.Thread.Sleep(10);
                 if (B.connected)
                 {
                     drawEngine.connect = true;

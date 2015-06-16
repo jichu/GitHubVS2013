@@ -35,7 +35,7 @@ namespace __EGG__app_bci_emo_ev3
         private WindowRenderTarget renderTarget;
         RenderLoop.RenderCallback callback;
         private RenderForm rf;
-        private int sleep = 1000; // idle time
+        private int sleep = 0; // idle time
         private float[] data = new float[14];
         private Individual[] ind = new Individual[14];
         private Point[] point = new Point[14];
@@ -104,7 +104,6 @@ namespace __EGG__app_bci_emo_ev3
                     data[i] = noise.NextFloat(0, 1);
                     tmp += data[i].ToString() + ", ";
                 }
-                Console.WriteLine(tmp);
                 Thread.Sleep(sleep);
                 Application.DoEvents();
             }
@@ -141,11 +140,12 @@ namespace __EGG__app_bci_emo_ev3
                 renderTarget.Clear(Color4.White);
                 //dPolygon();
                 firstRender = false;
-                
+
             }
+            renderTarget.Clear(Color4.White);
             drawQualitySignal(15, rf.Width - 90, 80);
             drawConectivity();
-            draw();
+            //draw();
             renderTarget.Flush();
             renderTarget.EndDraw();
             Thread.Sleep(sleep);
