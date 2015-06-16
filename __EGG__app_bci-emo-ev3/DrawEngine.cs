@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Threading;
-/*
+/* 0
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
  * */
@@ -40,7 +40,8 @@ namespace __EGG__app_bci_emo_ev3
         private Individual[] ind = new Individual[14];
         private Point[] point = new Point[14];
         private Dictionary<string, string> qualitySignalData = new Dictionary<string, string>();
-        public bool connect = false;
+        public bool connect = false; 
+        private string[] channelNames;
 
         public DrawEngine()
         {
@@ -128,8 +129,11 @@ namespace __EGG__app_bci_emo_ev3
             point[11].X = -4; point[11].Y = -3; // F7
             point[12].X = -2; point[12].Y = -4; // AF3
             point[13].X = -1; point[13].Y = -3; // F3
+            // nazvy kanalu
+            channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" }; 
         }
-        // hlavnĂ­ render smyÄŤka
+
+        // hlavni­ render smycka
         bool firstRender = true;
         private void render()
         {
@@ -150,13 +154,13 @@ namespace __EGG__app_bci_emo_ev3
         }
 
         /*
-         * kvalita signĂˇlu
+         * kvalita signalu
          */
         public void setQualitySignalData(Dictionary<string, string> quality)
         {
             qualitySignalData = quality;
         }
-        // bod/kvaita signĂˇlu
+        // bod/kvaita signalu
         private void dPointSenzor(float x, float y, float radius, string quality)
         {
             Color4 color = new Color4(0, 0, 0, 1);
@@ -193,7 +197,7 @@ namespace __EGG__app_bci_emo_ev3
 
 
         /*
-         * vykreslovĂˇnĂ­
+         * vykreslovani
          */
         // kruh/bod/objekt
         private void dPoint(float x, float y, float radius, float value)
