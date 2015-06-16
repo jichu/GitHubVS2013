@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Emotiv;
 
 namespace __EGG__app_bci_emo_ev3
 {
@@ -105,6 +106,14 @@ namespace __EGG__app_bci_emo_ev3
                 string key = B.getChannelNames()[i];
                 labelLog.Text += key + ": "+ B.getContactQualityDictionary()[key] + Environment.NewLine;
             }
+
+            labelLog.Text += B.GetUserID().ToString()+Environment.NewLine;
+            foreach (KeyValuePair<EdkDll.EE_DataChannel_t,double[]> item in B.getEEGData())
+            {
+                    labelLog.Text += item.Key + " " + item.Value[1] + Environment.NewLine;
+            }
+
+
         }
 
         private void canvas_Paint(object sender, PaintEventArgs e)

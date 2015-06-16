@@ -11,9 +11,9 @@ namespace __EGG__app_bci_emo_ev3
     {
         Brain B;
         Computer C;
-        int counter = 0;
-        Boolean wasCloseEye;
-        Boolean moving = false;
+        //int counter = 0;
+        //Boolean wasCloseEye;
+        //Boolean moving = false;
         private DrawEngine drawEngine;
         public Interface(Brain brain, Computer comp)
         {
