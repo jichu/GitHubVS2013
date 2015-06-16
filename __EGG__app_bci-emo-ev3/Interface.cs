@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace __EGG__app_bci_emo_ev3
 {
@@ -46,9 +47,11 @@ namespace __EGG__app_bci_emo_ev3
                 }
                 // TO DO
                 drawEngine.setQualitySignalData(B.getContactQualityDictionary());
-                
 
 
+
+                GC.Collect();
+                Application.DoEvents();
                 /*
                 if (B.isCalm)
                 {
