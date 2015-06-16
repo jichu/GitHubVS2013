@@ -44,8 +44,8 @@ namespace __EGG__app_bci_emo_ev3
             engine.UserAdded += (UserAdded);
             try
             {
-                engine.Connect();
-                //engine.RemoteConnect("127.0.0.1", 1726);
+                //engine.Connect();
+                engine.RemoteConnect("127.0.0.1", 1726);
                 for (int i = 0; i < 18; i++)
                 {
                     contactQualityDictionary.Add(channelNames[i], "0");
@@ -275,7 +275,7 @@ namespace __EGG__app_bci_emo_ev3
                 ACdataEEG.Add(item.Key, editedData); 
             }
 
-            int _bufferSize = ACdataEEG[EdkDll.EE_DataChannel_t.AF3].Length;
+            /*int _bufferSize = ACdataEEG[EdkDll.EE_DataChannel_t.AF3].Length;
             string filename = @"C:\Programy\data.csv";
             // Write the data to a file
             TextWriter file = new StreamWriter(filename, true);
@@ -288,7 +288,7 @@ namespace __EGG__app_bci_emo_ev3
                 file.WriteLine("");
 
             }
-            file.Close();
+            file.Close();*/
             return (ACdataEEG);
         }
 
