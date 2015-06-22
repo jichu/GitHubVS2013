@@ -23,7 +23,6 @@ using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 using SharpDX.WIC;
 using SharpDX.IO;
-using SharpDX.Toolkit.Graphics;
 
 namespace __EGG__app_bci_emo_ev3
 {
