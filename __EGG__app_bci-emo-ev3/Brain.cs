@@ -68,7 +68,7 @@ namespace __EGG__app_bci_emo_ev3
         }
         private void EmoStateUpdated(object sender, EmoStateUpdatedEventArgs e)
         {
-            EmoState es = e.emoState;
+            EmoState es = e.emoState;         
             if (es.GetHeadsetOn() == 1)
             {
                 connected = true;
@@ -92,11 +92,11 @@ namespace __EGG__app_bci_emo_ev3
                 try
                 {
                     engine.ProcessEvents(100);
-                    if (gyroWait)
+                    /*if (gyroWait)
                     {
                         System.Threading.Thread.Sleep(550);
                         gyroWait = false;
-                    }
+                    }*/
 
                     if ((int)userID != -1)
                     {
@@ -133,10 +133,9 @@ namespace __EGG__app_bci_emo_ev3
                 }
                 catch (EmoEngineException ex)
                 {
-                    Console.WriteLine("error run");
+                    //Console.WriteLine("error run");
                     log += "Fail in EmoEngine. Message: " + ex.Message;
                     log += "\nError stack: " + ex.StackTrace;
-                    connected = false;
                 }
             }
         }
@@ -202,14 +201,16 @@ namespace __EGG__app_bci_emo_ev3
              * */
         }
 
-        private static void EmoEngineConnected(object sender, EmoEngineEventArgs e)
+        private void EmoEngineConnected(object sender, EmoEngineEventArgs e)
         {
             Console.WriteLine("connected {0}",e);
+            //connected = true;
         }
 
-        private static void EmoEngineDisconnected(object sender, EmoEngineEventArgs e)
+        private void EmoEngineDisconnected(object sender, EmoEngineEventArgs e)
         {
             Console.WriteLine("disconnected");
+            //connected = false;
         }
 
         void UserAdded(object sender, EmoEngineEventArgs e)

@@ -30,7 +30,7 @@ namespace __EGG__app_bci_emo_ev3
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            //AllocConsole();
+            AllocConsole();
             drawEngine = new DrawEngine();
 
             initBrain();
