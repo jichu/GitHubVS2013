@@ -71,11 +71,9 @@ namespace __EGG__app_bci_emo_ev3
         }
         public void init()
         {
-            /*
             renderThread = new Thread(new ThreadStart(simulate));
             renderThread.IsBackground = true;
             renderThread.Start();
-             * */
             rf.Show();
             initPoints();
             int offset = 250;
@@ -144,10 +142,10 @@ namespace __EGG__app_bci_emo_ev3
                 firstRender = false;
 
             }
-            renderTarget.Clear(Color4.White);
+//            renderTarget.Clear(Color4.White);
             drawQualitySignal(15, rf.Width - 90, 80);
             drawConectivity();
-            //draw();
+            draw();
             renderTarget.Flush();
             renderTarget.EndDraw();
             Thread.Sleep(sleep);
@@ -208,13 +206,24 @@ namespace __EGG__app_bci_emo_ev3
             float g = value / 2;
             float b = value;
             float a = 0.1f;
-            //SolidColorBrush brush = new SolidColorBrush(renderTarget, new Color4(r,g,b,a));
+            SolidColorBrush brush = new SolidColorBrush(renderTarget, new Color4(r,g,b,a));
+            /*
             GradientStop[] gradientStop = new GradientStop[2];
             gradientStop[0] = new GradientStop() { Color = new Color4(r, g, b, a), Position = 0.0f };
             gradientStop[1] = new GradientStop() { Color = new Color4(r, g, b, 0), Position = 1.0f };
-            RadialGradientBrush fill = radialGradient(x, y, radius, gradientStop);
+            GradientStopCollection gradientStopCollection = new GradientStopCollection(renderTarget, gradientStop, ExtendMode.Clamp);
+            RadialGradientBrushProperties radialGradientBrush = new RadialGradientBrushProperties()
+            {
+                RadiusX = radius,
+                RadiusY = radius,
+                Center = new Vector2(x, y),
+                GradientOriginOffset = new Vector2(0, 0)
+            };
+            RadialGradientBrush brush = new RadialGradientBrush(renderTarget, radialGradientBrush, gradientStopCollection);
+             * */
             //renderTarget.DrawEllipse(new Ellipse(new Vector2(x, y), radius, radius), brush);
-            renderTarget.FillEllipse(new Ellipse(new Vector2(x, y), radius, radius), fill);
+            renderTarget.FillEllipse(new Ellipse(new Vector2(x, y), radius, radius), brush);
+            brush.Dispose();
         }
         private RadialGradientBrush radialGradient(float x, float y, float radius, GradientStop[] gradientStop)
         {
@@ -228,8 +237,14 @@ namespace __EGG__app_bci_emo_ev3
             };
             return new RadialGradientBrush(renderTarget, radialGradientBrush, gradientStopCollection);
         }
+        private int maxOld = 100;
         private void draw()
         {
+            if (ind[0].old > maxOld)
+            {
+                ind[0].old = 0;
+                renderTarget.Clear(Color4.White);
+            }
             for (int i = 0; i < 14; i++)
             {
                 //ind[i].grow(data[i]);
