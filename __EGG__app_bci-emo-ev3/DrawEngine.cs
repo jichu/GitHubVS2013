@@ -23,6 +23,7 @@ using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 using SharpDX.WIC;
 using SharpDX.IO;
+using SharpDX.Toolkit.Graphics;
 
 namespace __EGG__app_bci_emo_ev3
 {
@@ -63,6 +64,7 @@ namespace __EGG__app_bci_emo_ev3
 
                 renderTarget = new WindowRenderTarget(factory, winProp, hwnd);
                 renderTarget.AntialiasMode = AntialiasMode.PerPrimitive;
+                SpriteBatch sprite;
             }
             catch (Exception ex)
             {
@@ -71,9 +73,11 @@ namespace __EGG__app_bci_emo_ev3
         }
         public void init()
         {
+            /*
             renderThread = new Thread(new ThreadStart(simulate));
             renderThread.IsBackground = true;
             renderThread.Start();
+             * */
             rf.Show();
             initPoints();
             int offset = 250;
@@ -182,6 +186,7 @@ namespace __EGG__app_bci_emo_ev3
             }
             SolidColorBrush brush = new SolidColorBrush(renderTarget, color);
             renderTarget.FillEllipse(new Ellipse(new Vector2(x, y), radius, radius), brush);
+            brush.Dispose();
         }
         public void drawQualitySignal(int zoom, int offsetX, int offsetY)
         {
@@ -249,6 +254,7 @@ namespace __EGG__app_bci_emo_ev3
             }
             SolidColorBrush brush = new SolidColorBrush(renderTarget, color);
             renderTarget.FillEllipse(new Ellipse(new Vector2(x, y), radius, radius), brush);
+            brush.Dispose();
             //LoadFromFile(renderTarget, "c:\\workspace\\csharp\\__EGG__app_bci-emo-ev3\\__EGG__app_bci-emo-ev3\\bin\\Debug\\epoc.png");
         }
         private void drawConectivity()

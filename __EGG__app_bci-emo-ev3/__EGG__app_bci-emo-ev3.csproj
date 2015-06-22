@@ -81,6 +81,9 @@
     <Reference Include="SharpDX.DXGI">
       <HintPath>..\..\SharpDX\DirectX11_2-net40\SharpDX.DXGI.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.Toolkit.Graphics">
+      <HintPath>..\..\SharpDX\DirectX11_2-net40\SharpDX.Toolkit.Graphics.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
