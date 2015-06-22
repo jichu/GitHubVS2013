@@ -63,7 +63,6 @@ namespace __EGG__app_bci_emo_ev3
 
                 renderTarget = new WindowRenderTarget(factory, winProp, hwnd);
                 renderTarget.AntialiasMode = AntialiasMode.PerPrimitive;
-                SpriteBatch sprite;
             }
             catch (Exception ex)
             {
