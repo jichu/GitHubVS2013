@@ -120,6 +120,7 @@ namespace __EGG__app_bci_emo_ev3
         public void stop()
         {
             drawEngine.stop();
+            
         }
 
     };

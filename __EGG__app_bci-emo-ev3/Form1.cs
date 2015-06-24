@@ -108,11 +108,16 @@ namespace __EGG__app_bci_emo_ev3
             }
             */
             labelLog.Text += B.GetUserID().ToString()+Environment.NewLine;
-            foreach (KeyValuePair<EdkDll.EE_DataChannel_t,double[]> item in B.getEEGData())
+            try
             {
+                foreach (KeyValuePair<EdkDll.EE_DataChannel_t, double[]> item in B.getEEGData())
+                {
                     labelLog.Text += item.Key + " " + item.Value[1] + Environment.NewLine;
+                }
             }
-
+            catch (Exception ex){
+                labelLog.Text += "No data";
+            }
 
         }
 
