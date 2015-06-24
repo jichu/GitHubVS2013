@@ -19,10 +19,12 @@ using System.Runtime.InteropServices;
 using Factory = SharpDX.Direct2D1.Factory;
 using Point = SharpDX.Point;
 using Bitmap = SharpDX.Direct2D1.Bitmap;
+using Device = SharpDX.Direct2D1.Device;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
 using SharpDX.WIC;
 using SharpDX.IO;
+using SharpDX.Toolkit.Graphics;
 
 namespace __EGG__app_bci_emo_ev3
 {
@@ -30,9 +32,13 @@ namespace __EGG__app_bci_emo_ev3
     {
         private Thread renderThread;
         private Factory factory;
+        private Device device;
         private ImagingFactory imagingFactory;
-        NativeFileStream fileStream;
+        private GraphicsDevice graphicsDevice;
+        private NativeFileStream fileStream;
         private WindowRenderTarget renderTarget;
+        private RenderTarget target;
+        private Bitmap bitmap;
         RenderLoop.RenderCallback callback;
         private RenderForm rf;
         private int sleep = 0; // idle time
@@ -63,6 +69,31 @@ namespace __EGG__app_bci_emo_ev3
 
                 renderTarget = new WindowRenderTarget(factory, winProp, hwnd);
                 renderTarget.AntialiasMode = AntialiasMode.PerPrimitive;
+                /*
+                var swapChainDesc = new SwapChainDescription
+                {
+                    BufferCount = 2,
+                    Usage = Usage.RenderTargetOutput,
+                    OutputHandle = rf.Handle,
+                    IsWindowed = true,
+                    ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
+                    SampleDescription = new SampleDescription(1, 0),
+                    Flags = SwapChainFlags.AllowModeSwitch,
+                    SwapEffect = SwapEffect.Discard
+                };
+                target.
+                Surface backBuffer = swapChain.GetBackBuffer<Surface>(0);
+                d2dTarget = newBitmap1(d2dContext, backBuffer, properties);
+
+                device = new Device(new IntPtr());
+                device.
+                Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.BgraSupport, swapChainDesc, out _device, out _swapChain);
+                _d2dBackBuffer = Surface.FromSwapChain(_swapChain, 0);
+                target = new RenderTarget();
+                 * */
+
+                BitmapProperties props = new BitmapProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied));
+                bitmap = new Bitmap(renderTarget, new Size2(500, 300), props);
             }
             catch (Exception ex)
             {
@@ -257,7 +288,7 @@ namespace __EGG__app_bci_emo_ev3
         /*
          * stav konektivity
          */
-        // bod/signĂˇl on/off
+        // bod/signal on/off
         private void dPointConnect(float x, float y, float radius, bool status)
         {
             Color4 color = new Color4(1, 0, 0, 1);

@@ -42,6 +42,7 @@
             this.labelEmoStatus = new System.Windows.Forms.Label();
             this.labelMonobrickStatus = new System.Windows.Forms.Label();
             this.timerMain = new System.Windows.Forms.Timer(this.components);
+            this.canvas = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxEmo)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxMonobrick)).BeginInit();
             this.SuspendLayout();
@@ -98,11 +99,19 @@
             // 
             this.timerMain.Tick += new System.EventHandler(this.timerMain_Tick);
             // 
+            // canvas
+            // 
+            this.canvas.Location = new System.Drawing.Point(15, 42);
+            this.canvas.Name = "canvas";
+            this.canvas.Size = new System.Drawing.Size(679, 453);
+            this.canvas.TabIndex = 5;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(831, 245);
+            this.ClientSize = new System.Drawing.Size(831, 525);
+            this.Controls.Add(this.canvas);
             this.Controls.Add(this.labelMonobrickStatus);
             this.Controls.Add(this.labelEmoStatus);
             this.Controls.Add(this.pictureBoxMonobrick);
@@ -127,6 +136,7 @@
         public System.Windows.Forms.Label labelMonobrickStatus;
         public System.Windows.Forms.Label labelLog;
         private System.Windows.Forms.Timer timerMain;
+        public System.Windows.Forms.Panel canvas;
     }
 }
 
