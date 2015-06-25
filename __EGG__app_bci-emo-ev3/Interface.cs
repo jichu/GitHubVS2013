@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace __EGG__app_bci_emo_ev3
 {
-    public class Interface
+    public class Interface : Form1
     {
         Brain B;
         Computer C;
@@ -25,9 +25,9 @@ namespace __EGG__app_bci_emo_ev3
         {
             B = brain;
         }
-        public void initDrawEngine()
+        public void initDrawEngine(Form1 form)
         {
-            drawEngine = new DrawEngine();
+            drawEngine = new DrawEngine(form);
             Thread i = new Thread(new ThreadStart(Run));
             i.IsBackground = true;
             i.Start();

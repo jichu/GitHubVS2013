@@ -27,7 +27,7 @@ using SharpDX.IO;
 
 namespace __EGG__app_bci_emo_ev3
 {
-    class DrawEngine : Form1
+    public class DrawEngine 
     {
         private Thread renderThread;
         private Factory factory;
@@ -45,23 +45,26 @@ namespace __EGG__app_bci_emo_ev3
         private Point[] point = new Point[14];
         private Dictionary<string, string> qualitySignalData = new Dictionary<string, string>();
         public bool connect = false; 
-        private string[] channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" }; 
+        private string[] channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" };
+        private Form1 form;
 
-        public DrawEngine()
+        public DrawEngine(Form1 f)
         {
             try
             {
+                form = f;
                 factory = new Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded);
+                /*
                 rf = new RenderForm("__proto__BCI");
-                rf.Width = 1024;
-                rf.Height = 768;
+                rf.Width = 500;
+                rf.Height = 768;*/
                 RenderTargetProperties winProp = new RenderTargetProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied));
 
                 //set hwnd target properties (permit to attach Direct2D to window)
                 HwndRenderTargetProperties hwnd = new HwndRenderTargetProperties()
                 {
-                    Hwnd = rf.Handle,
-                    PixelSize = new Size2(rf.Width, rf.Height),//canvas.ClientSize.Width, canvas.ClientSize.Height),
+                    Hwnd = form.canvas.Handle,
+                    PixelSize = new Size2(form.canvas.ClientSize.Width, form.canvas.ClientSize.Height),
                     PresentOptions = PresentOptions.RetainContents
                 };
 
@@ -103,7 +106,7 @@ namespace __EGG__app_bci_emo_ev3
             renderThread = new Thread(new ThreadStart(simulate));
             renderThread.IsBackground = true;
             renderThread.Start();
-            rf.Show();
+            //rf.Show();
             initPoints();
             int offset = 250;
             int zoom = 40;
@@ -115,12 +118,12 @@ namespace __EGG__app_bci_emo_ev3
                 ind[i] = new Individual(x, y, size, data[i]);
             }
             callback = new RenderLoop.RenderCallback(render);
-            RenderLoop.Run(rf, callback);
+            RenderLoop.Run(form.canvas, callback);
         }
         public void stop()
         {
-            rf.Close();
-            //renderThread.Abort();
+            renderTarget.Dispose();
+            renderTarget = null;
         }
         private void simulate()
         {
@@ -166,18 +169,19 @@ namespace __EGG__app_bci_emo_ev3
             renderTarget.BeginDraw();
             if (firstRender)
             {
-                renderTarget.Clear(Color4.White);
+                //renderTarget.Clear(Color4.White);
                 //dPolygon();
                 firstRender = false;
 
             }
 //            renderTarget.Clear(Color4.White);
-            drawQualitySignal(15, rf.Width - 90, 80);
+            drawQualitySignal(15, form.canvas.ClientSize.Width - 90, 80);
             drawConectivity();
             draw();
             renderTarget.Flush();
             renderTarget.EndDraw();
-            Thread.Sleep(sleep);
+            Application.DoEvents();
+            //Thread.Sleep(sleep);
         }
 
         /*
@@ -276,7 +280,7 @@ namespace __EGG__app_bci_emo_ev3
             }
             for (int i = 0; i < 14; i++)
             {
-                //ind[i].grow(data[i]);
+                ind[i].grow(data[i]);
                 dPoint(ind[i].posX, ind[i].posY, ind[i].size, ind[i].value);
                 ind[i].old++;
             }
@@ -303,7 +307,7 @@ namespace __EGG__app_bci_emo_ev3
         {
             int size = 20;
             int padding = 10;
-            dPointConnect(rf.Width - size - padding, rf.Height - size - padding, size, connect);
+            dPointConnect(form.canvas.ClientSize.Width - size - padding, form.canvas.ClientSize.Height - size - padding, size, connect);
         }
 
        /* public static Bitmap LoadFromFile(RenderTarget renderTarget, string file)
@@ -432,7 +436,7 @@ namespace __EGG__app_bci_emo_ev3
             float diff = value - val;
             float av = (value + val) / (float)old;
             value = val;
-            size += delta * 2;
+            size += delta * 1.0002f;
             if (historyDiff < 0)
             {
                 if (diff < 0)

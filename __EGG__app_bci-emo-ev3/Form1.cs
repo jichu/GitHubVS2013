@@ -30,14 +30,7 @@ namespace __EGG__app_bci_emo_ev3
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            AllocConsole();
-            drawEngine = new DrawEngine();
-
-            initBrain();
-            //initComputer();
-            initInterface();
-            timerMain.Start();
-            //drawEngine.setQualitySignalData(B.getContenctQuality());
+            //  AllocConsole();
         }
 
         private void initBrain()
@@ -73,7 +66,7 @@ namespace __EGG__app_bci_emo_ev3
         private void initInterface()
         {
             I = new Interface(B);
-            I.initDrawEngine();
+            I.initDrawEngine(this);
             /* robot
             if (B.connected && C.connected)
             {
@@ -120,12 +113,6 @@ namespace __EGG__app_bci_emo_ev3
             }
 
         }
-
-        private void canvas_Paint(object sender, PaintEventArgs e)
-        {
-            //Graphics g = canvas.CreateGraphics();
-        }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             threadB.Abort();
@@ -135,6 +122,29 @@ namespace __EGG__app_bci_emo_ev3
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAsAttribute(UnmanagedType.Bool)]
         static extern bool AllocConsole();
+
+        private void canvas_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void Form1_Shown(object sender, EventArgs e)
+        {
+            initBrain();
+            //initComputer();
+            initInterface();
+            timerMain.Start();
+        }
+
+        private void konecToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
+        }
+
+        private void emoComposerToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            // TO DO
+        }
 
 
     }
