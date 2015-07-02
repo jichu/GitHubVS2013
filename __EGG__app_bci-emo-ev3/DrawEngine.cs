@@ -31,15 +31,13 @@ namespace __EGG__app_bci_emo_ev3
     {
         private Thread renderThread;
         private Factory factory;
-        private Device device;
-        private ImagingFactory imagingFactory;
-        private NativeFileStream fileStream;
+//        private ImagingFactory imagingFactory;
+  //      private NativeFileStream fileStream;
         private WindowRenderTarget renderTarget;
         private RenderTarget target;
         private Bitmap bitmap;
         RenderLoop.RenderCallback callback;
-        private RenderForm rf;
-        private int sleep = 0; // idle time
+        private int sleep = 1000; // idle time
         private float[] data = new float[14];
         private Individual[] ind = new Individual[14];
         private Point[] point = new Point[14];
@@ -54,10 +52,6 @@ namespace __EGG__app_bci_emo_ev3
             {
                 form = f;
                 factory = new Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded);
-                /*
-                rf = new RenderForm("__proto__BCI");
-                rf.Width = 500;
-                rf.Height = 768;*/
                 RenderTargetProperties winProp = new RenderTargetProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied));
 
                 //set hwnd target properties (permit to attach Direct2D to window)
@@ -70,28 +64,7 @@ namespace __EGG__app_bci_emo_ev3
 
                 renderTarget = new WindowRenderTarget(factory, winProp, hwnd);
                 renderTarget.AntialiasMode = AntialiasMode.PerPrimitive;
-                /*
-                var swapChainDesc = new SwapChainDescription
-                {
-                    BufferCount = 2,
-                    Usage = Usage.RenderTargetOutput,
-                    OutputHandle = rf.Handle,
-                    IsWindowed = true,
-                    ModeDescription = new ModeDescription(0, 0, new Rational(60, 1), Format.B8G8R8A8_UNorm),
-                    SampleDescription = new SampleDescription(1, 0),
-                    Flags = SwapChainFlags.AllowModeSwitch,
-                    SwapEffect = SwapEffect.Discard
-                };
-                target.
-                Surface backBuffer = swapChain.GetBackBuffer<Surface>(0);
-                d2dTarget = newBitmap1(d2dContext, backBuffer, properties);
 
-                device = new Device(new IntPtr());
-                device.
-                Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.BgraSupport, swapChainDesc, out _device, out _swapChain);
-                _d2dBackBuffer = Surface.FromSwapChain(_swapChain, 0);
-                target = new RenderTarget();
-                 * */
 
                 BitmapProperties props = new BitmapProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied));
                 bitmap = new Bitmap(renderTarget, new Size2(500, 300), props);
@@ -106,7 +79,7 @@ namespace __EGG__app_bci_emo_ev3
             renderThread = new Thread(new ThreadStart(simulate));
             renderThread.IsBackground = true;
             renderThread.Start();
-            //rf.Show();
+
             initPoints();
             int offset = 250;
             int zoom = 40;
@@ -169,7 +142,7 @@ namespace __EGG__app_bci_emo_ev3
             renderTarget.BeginDraw();
             if (firstRender)
             {
-                //renderTarget.Clear(Color4.White);
+                renderTarget.Clear(Color4.White);
                 //dPolygon();
                 firstRender = false;
 
@@ -181,7 +154,7 @@ namespace __EGG__app_bci_emo_ev3
             renderTarget.Flush();
             renderTarget.EndDraw();
             Application.DoEvents();
-            //Thread.Sleep(sleep);
+            Thread.Sleep(sleep);
         }
 
         /*
@@ -270,18 +243,19 @@ namespace __EGG__app_bci_emo_ev3
             };
             return new RadialGradientBrush(renderTarget, radialGradientBrush, gradientStopCollection);
         }
-        private int maxOld = 100;
+        private int maxOld = 10000;
         private void draw()
         {
+            /*
             if (ind[0].old > maxOld)
             {
                 ind[0].old = 0;
-                renderTarget.Clear(Color4.White);
-            }
+                //renderTarget.Clear(Color4.White);
+            }*/
             for (int i = 0; i < 14; i++)
             {
-                ind[i].grow(data[i]);
-                dPoint(ind[i].posX, ind[i].posY, ind[i].size, ind[i].value);
+                //ind[i].grow(data[i]);
+                dPoint(ind[i].X, ind[i].Y, ind[i].size, ind[i].value);
                 ind[i].old++;
             }
         }
@@ -359,7 +333,7 @@ namespace __EGG__app_bci_emo_ev3
             PathGeometry pathGeometry;
             pathGeometry = new PathGeometry(factory);
             geometrySink = pathGeometry.Open();
-            geometrySink.BeginFigure(new Vector2(ind[0].posX, ind[0].posY), new FigureBegin());
+            geometrySink.BeginFigure(new Vector2(ind[0].X, ind[0].Y), new FigureBegin());
             /*
             for (int i = 1; i < 14; i++)
                 geometrySink.AddLine(new Vector2(ind[i].posX, ind[i].posY));
@@ -367,21 +341,21 @@ namespace __EGG__app_bci_emo_ev3
              * */
             geometrySink.AddBezier(new BezierSegment
             {
-                Point1 = new Vector2(ind[0].posX, ind[0].posY),
-                Point2 = new Vector2(ind[1].posX, ind[1].posY),
-                Point3 = new Vector2(ind[2].posX, ind[2].posY)
+                Point1 = new Vector2(ind[0].X, ind[0].Y),
+                Point2 = new Vector2(ind[1].X, ind[1].Y),
+                Point3 = new Vector2(ind[2].X, ind[2].Y)
             });
             geometrySink.AddBezier(new BezierSegment
             {
-                Point1 = new Vector2(ind[2].posX, ind[2].posY),
-                Point2 = new Vector2(ind[3].posX, ind[3].posY),
-                Point3 = new Vector2(ind[4].posX, ind[4].posY)
+                Point1 = new Vector2(ind[2].X, ind[2].Y),
+                Point2 = new Vector2(ind[3].X, ind[3].Y),
+                Point3 = new Vector2(ind[4].X, ind[4].Y)
             });
             geometrySink.AddBezier(new BezierSegment
             {
-                Point1 = new Vector2(ind[4].posX, ind[4].posY),
-                Point2 = new Vector2(ind[5].posX, ind[5].posY),
-                Point3 = new Vector2(ind[6].posX, ind[6].posY)
+                Point1 = new Vector2(ind[4].X, ind[4].Y),
+                Point2 = new Vector2(ind[5].X, ind[5].Y),
+                Point3 = new Vector2(ind[6].X, ind[6].Y)
             });
             geometrySink.EndFigure(new FigureEnd());
             geometrySink.Close();
@@ -410,31 +384,68 @@ namespace __EGG__app_bci_emo_ev3
      */
     class Individual
     {
-        public int posX;
-        public int posY;
+        public int X;
+        public int Y;
+        private int Xdefault;
+        private int Ydefault;
         public float size;
+        private float sizeDefault;
         public int old;
         public float value; // EEG mV
         public enum type { };
         private enum direction { UP, RIGHT, DOWN, LEFT };
-        private float historyDiff = 0;
+        private List<Point> historyPosition = new List<Point>(); // zasobnik hodnot
+        private List<float> historyValue = new List<float>(); // zasobnik hodnot
+        private int historyMax = 5;
+
         public Individual(int x = 0, int y = 0, float s = 1, float val = 0)
         {
             setPosition(x, y);
             size = s;
-            old = 1;
             value = val;
+            // vychozi stavy
+            Xdefault = X;
+            Ydefault = Y;
+            sizeDefault = size;
+        }
+        private void reset()
+        {
+            X = Xdefault;
+            Y = Ydefault;
+            size = sizeDefault;
         }
         public void setPosition(int x, int y)
         {
-            posX = x;
-            posY = y;
+            X = x;
+            Y = y;
         }
+        private void setHistoryPosition(Point val)
+        {
+            historyPosition.Add(val);
+            if (historyPosition.Count >= historyMax)
+                historyPosition.RemoveAt(0);
+        }
+        private void setHistoryValue(float val)
+        {
+            historyValue.Add(val);
+            if (historyValue.Count >= historyMax)
+                historyValue.RemoveAt(0);
+        }
+        //private float average()
         public void grow(float val)
         {
             float delta = Math.Abs(value - val);
             float diff = value - val;
-            float av = (value + val) / (float)old;
+            Point point = new Point();
+            point.X = X;
+            point.Y = Y;
+            setHistoryPosition(point);
+            setHistoryValue(val);
+
+
+            float av = historyValue.Average();
+
+            /*
             value = val;
             size += delta * 1.0002f;
             if (historyDiff < 0)
@@ -452,6 +463,7 @@ namespace __EGG__app_bci_emo_ev3
                     move(direction.RIGHT);
             }
             historyDiff = diff;
+             * */
         }
         private void move(direction where)
         {
@@ -459,16 +471,16 @@ namespace __EGG__app_bci_emo_ev3
             switch (where)
             {
                 case direction.UP:
-                    posY -= delda;
+                    Y -= delda;
                     break;
                 case direction.RIGHT:
-                    posX += delda;
+                    X += delda;
                     break;
                 case direction.DOWN:
-                    posY += delda;
+                    Y += delda;
                     break;
                 case direction.LEFT:
-                    posX -= delda;
+                    X -= delda;
                     break;
             }
         }
