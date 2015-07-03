@@ -17,40 +17,51 @@ using SharpDX.Windows;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using Factory = SharpDX.Direct2D1.Factory;
+using FactoryDXGI = SharpDX.DXGI.Factory;
 using Point = SharpDX.Point;
 using Bitmap = SharpDX.Direct2D1.Bitmap;
 using Device = SharpDX.Direct2D1.Device;
+using DeviceDXGI = SharpDX.DXGI.Device;
 using AlphaMode = SharpDX.Direct2D1.AlphaMode;
 using PixelFormat = SharpDX.Direct2D1.PixelFormat;
+using Texture2D = SharpDX.Toolkit.Graphics.Texture2D;
 using SharpDX.WIC;
 using SharpDX.IO;
 
 namespace __EGG__app_bci_emo_ev3
 {
-    public class DrawEngine 
+    public class DrawEngine
     {
+        private const int NoE = 14; // pocet zobrazenych snimacu
+        private const int sleep = 0; // idle time
+        private string[] channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" };
+
         private Thread renderThread;
         private Factory factory;
-//        private ImagingFactory imagingFactory;
-  //      private NativeFileStream fileStream;
+        //        private ImagingFactory imagingFactory;
+        //      private NativeFileStream fileStream;
         private WindowRenderTarget renderTarget;
-        private RenderTarget target;
+        //private RenderTarget target;
         private Bitmap bitmap;
         RenderLoop.RenderCallback callback;
-        private int sleep = 1000; // idle time
-        private float[] data = new float[14];
-        private Individual[] ind = new Individual[14];
-        private Point[] point = new Point[14];
+        private float[] data = new float[NoE];
+        private DrawEngine_Individual[] ind = new DrawEngine_Individual[NoE];
+        private Point[] point = new Point[NoE];
         private Dictionary<string, string> qualitySignalData = new Dictionary<string, string>();
-        public bool connect = false; 
-        private string[] channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" };
+        public bool connect = false;
+
+        // form vars
         private Form1 form;
+        private int canvasWidth;
+        private int canvasHeight;
 
         public DrawEngine(Form1 f)
         {
             try
             {
                 form = f;
+                canvasWidth = form.canvas.ClientSize.Width;
+                canvasHeight = form.canvas.ClientSize.Height;
                 factory = new Factory(SharpDX.Direct2D1.FactoryType.MultiThreaded);
                 RenderTargetProperties winProp = new RenderTargetProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied));
 
@@ -58,14 +69,13 @@ namespace __EGG__app_bci_emo_ev3
                 HwndRenderTargetProperties hwnd = new HwndRenderTargetProperties()
                 {
                     Hwnd = form.canvas.Handle,
-                    PixelSize = new Size2(form.canvas.ClientSize.Width, form.canvas.ClientSize.Height),
-                    PresentOptions = PresentOptions.RetainContents
+                    PixelSize = new Size2(canvasWidth, canvasHeight),
+                    PresentOptions = PresentOptions.Immediately
                 };
 
                 renderTarget = new WindowRenderTarget(factory, winProp, hwnd);
                 renderTarget.AntialiasMode = AntialiasMode.PerPrimitive;
-
-
+                
                 BitmapProperties props = new BitmapProperties(new PixelFormat(Format.B8G8R8A8_UNorm, AlphaMode.Premultiplied));
                 bitmap = new Bitmap(renderTarget, new Size2(500, 300), props);
             }
@@ -81,14 +91,15 @@ namespace __EGG__app_bci_emo_ev3
             renderThread.Start();
 
             initPoints();
-            int offset = 250;
-            int zoom = 40;
-            int size = 50;
-            for (int i = 0; i < 14; i++)
+            int offsetX = canvasWidth/2;
+            int offsetY = canvasHeight/2;
+            int zoom = 55;
+            int size = 10;
+            for (int i = 0; i < NoE; i++)
             {
-                int x = point[i].X * zoom + offset;
-                int y = point[i].Y * zoom + offset;
-                ind[i] = new Individual(x, y, size, data[i]);
+                int x = point[i].X * zoom + offsetX;
+                int y = point[i].Y * zoom + offsetY;
+                ind[i] = new DrawEngine_Individual(x, y, size, data[i], canvasWidth, canvasHeight);
             }
             callback = new RenderLoop.RenderCallback(render);
             RenderLoop.Run(form.canvas, callback);
@@ -104,12 +115,12 @@ namespace __EGG__app_bci_emo_ev3
             {
                 Random noise = new Random();
                 String tmp = "";
-                for (int i = 0; i < 14; i++)
+                for (int i = 0; i < NoE; i++)
                 {
                     data[i] = noise.NextFloat(0, 1);
                     tmp += data[i].ToString() + ", ";
                 }
-                Thread.Sleep(sleep);
+                Thread.Sleep(550);
                 Application.DoEvents();
             }
         }
@@ -143,18 +154,20 @@ namespace __EGG__app_bci_emo_ev3
             if (firstRender)
             {
                 renderTarget.Clear(Color4.White);
-                //dPolygon();
                 firstRender = false;
 
             }
-//            renderTarget.Clear(Color4.White);
-            drawQualitySignal(15, form.canvas.ClientSize.Width - 90, 80);
+                        //renderTarget.Clear(Color4.White);
+            drawQualitySignal(15, canvasWidth - 90, 80);
             drawConectivity();
+            dPolygon();
             draw();
             renderTarget.Flush();
             renderTarget.EndDraw();
+            //form.labelLog.Text = ind[0].historyValue.Average().ToString();
             Application.DoEvents();
-            Thread.Sleep(sleep);
+            Thread.Sleep(sleep+100);
+            form.canvas.Update();
         }
 
         /*
@@ -192,11 +205,11 @@ namespace __EGG__app_bci_emo_ev3
         }
         public void drawQualitySignal(int zoom, int offsetX, int offsetY)
         {
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < NoE; i++)
             {
                 int x = point[i].X * zoom + offsetX;
                 int y = point[i].Y * zoom + offsetY;
-                if(qualitySignalData.Count>1)
+                if (qualitySignalData.Count > 1)
                     dPointSenzor(x, y, 10, qualitySignalData[this.channelNames[i]]);
             }
         }
@@ -208,11 +221,11 @@ namespace __EGG__app_bci_emo_ev3
         // kruh/bod/objekt
         private void dPoint(float x, float y, float radius, float value)
         {
-            float r = value / 2;
-            float g = value / 2;
+            float r = value;
+            float g = value;
             float b = value;
             float a = 0.1f;
-            SolidColorBrush brush = new SolidColorBrush(renderTarget, new Color4(r,g,b,a));
+            SolidColorBrush brush = new SolidColorBrush(renderTarget, new Color4(r, g, b, a));
             /*
             GradientStop[] gradientStop = new GradientStop[2];
             gradientStop[0] = new GradientStop() { Color = new Color4(r, g, b, a), Position = 0.0f };
@@ -252,10 +265,10 @@ namespace __EGG__app_bci_emo_ev3
                 ind[0].old = 0;
                 //renderTarget.Clear(Color4.White);
             }*/
-            for (int i = 0; i < 14; i++)
+            for (int i = 0; i < NoE; i++)
             {
-                //ind[i].grow(data[i]);
-                dPoint(ind[i].X, ind[i].Y, ind[i].size, ind[i].value);
+                ind[i].grow(data[i]);
+                //dPoint(ind[i].X, ind[i].Y, ind[i].size, ind[i].value);
                 ind[i].old++;
             }
         }
@@ -284,61 +297,60 @@ namespace __EGG__app_bci_emo_ev3
             dPointConnect(form.canvas.ClientSize.Width - size - padding, form.canvas.ClientSize.Height - size - padding, size, connect);
         }
 
-       /* public static Bitmap LoadFromFile(RenderTarget renderTarget, string file)
-        {
-            // Loads from file using System.Drawing.Image
-            using (var bitmap = (System.Drawing.Bitmap)System.Drawing.Image.FromFile(file))
-            {
-                var sourceArea = new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height);
-                var bitmapProperties = new BitmapProperties(new PixelFormat(Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
-                var size = new Size2(bitmap.Width, bitmap.Height);
+        /* public static Bitmap LoadFromFile(RenderTarget renderTarget, string file)
+         {
+             // Loads from file using System.Drawing.Image
+             using (var bitmap = (System.Drawing.Bitmap)System.Drawing.Image.FromFile(file))
+             {
+                 var sourceArea = new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height);
+                 var bitmapProperties = new BitmapProperties(new PixelFormat(Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
+                 var size = new Size2(bitmap.Width, bitmap.Height);
 
-                // Transform pixels from BGRA to RGBA
-                int stride = bitmap.Width * sizeof(int);
-                using (var tempStream = new DataStream(bitmap.Height * stride, true, true))
-                {
-                    // Lock System.Drawing.Bitmap
-                    var bitmapData = bitmap.LockBits(sourceArea, ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+                 // Transform pixels from BGRA to RGBA
+                 int stride = bitmap.Width * sizeof(int);
+                 using (var tempStream = new DataStream(bitmap.Height * stride, true, true))
+                 {
+                     // Lock System.Drawing.Bitmap
+                     var bitmapData = bitmap.LockBits(sourceArea, ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
 
-                    // Convert all pixels 
-                    for (int y = 0; y < bitmap.Height; y++)
-                    {
-                        int offset = bitmapData.Stride * y;
-                        for (int x = 0; x < bitmap.Width; x++)
-                        {
-                            // Not optimized 
-                            byte B = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                            byte G = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                            byte R = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                            byte A = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                            int rgba = R | (G << 8) | (B << 16) | (A << 24);
-                            tempStream.Write(rgba);
-                        }
+                     // Convert all pixels 
+                     for (int y = 0; y < bitmap.Height; y++)
+                     {
+                         int offset = bitmapData.Stride * y;
+                         for (int x = 0; x < bitmap.Width; x++)
+                         {
+                             // Not optimized 
+                             byte B = Marshal.ReadByte(bitmapData.Scan0, offset++);
+                             byte G = Marshal.ReadByte(bitmapData.Scan0, offset++);
+                             byte R = Marshal.ReadByte(bitmapData.Scan0, offset++);
+                             byte A = Marshal.ReadByte(bitmapData.Scan0, offset++);
+                             int rgba = R | (G << 8) | (B << 16) | (A << 24);
+                             tempStream.Write(rgba);
+                         }
 
-                    }
-                    bitmap.UnlockBits(bitmapData);
-                    tempStream.Position = 0;
-                    return new Bitmap(renderTarget, size, tempStream, stride, bitmapProperties);
-                }
-            }
-        }*/
+                     }
+                     bitmap.UnlockBits(bitmapData);
+                     tempStream.Position = 0;
+                     return new Bitmap(renderTarget, size, tempStream, stride, bitmapProperties);
+                 }
+             }
+         }*/
 
         /// <summary>
         /// ///////////////////////////////
         /// </summary>
         private void dPolygon()
         {
-            Vector2[] vector = new Vector2[14];
+            Vector2[] vector = new Vector2[NoE];
             GeometrySink geometrySink;
             PathGeometry pathGeometry;
             pathGeometry = new PathGeometry(factory);
             geometrySink = pathGeometry.Open();
             geometrySink.BeginFigure(new Vector2(ind[0].X, ind[0].Y), new FigureBegin());
+            for (int i = 1; i < NoE; i++)
+                geometrySink.AddLine(new Vector2(ind[i].X, ind[i].Y));
+            geometrySink.AddLine(new Vector2(ind[0].X, ind[0].Y));
             /*
-            for (int i = 1; i < 14; i++)
-                geometrySink.AddLine(new Vector2(ind[i].posX, ind[i].posY));
-            geometrySink.AddLine(new Vector2(ind[0].posX, ind[0].posY));
-             * */
             geometrySink.AddBezier(new BezierSegment
             {
                 Point1 = new Vector2(ind[0].X, ind[0].Y),
@@ -356,133 +368,28 @@ namespace __EGG__app_bci_emo_ev3
                 Point1 = new Vector2(ind[4].X, ind[4].Y),
                 Point2 = new Vector2(ind[5].X, ind[5].Y),
                 Point3 = new Vector2(ind[6].X, ind[6].Y)
-            });
+            });*/
             geometrySink.EndFigure(new FigureEnd());
             geometrySink.Close();
             SolidColorBrush pen = new SolidColorBrush(renderTarget, new Color4(0, 0, 1, 0.1f));
+            float value = 0.3f;
+            float r = value;
+            float g = value;
+            float b = 1;
+            float a = 0.01f;
+            /*
             GradientStop[] gradientStop = new GradientStop[2];
-            float value = 1;
-            float r = value / 2;
-            float g = value / 2;
-            float b = value;
-            float a = 0.2f;
             gradientStop[0] = new GradientStop() { Color = new Color4(r, g, b, a), Position = 0.0f };
             gradientStop[1] = new GradientStop() { Color = new Color4(r, g, b, 0), Position = 1.0f };
             RadialGradientBrush fill = radialGradient(250, 250, 500, gradientStop);
-            renderTarget.DrawGeometry(pathGeometry, pen);
-            renderTarget.FillGeometry(pathGeometry, fill);
+             * */
+            SolidColorBrush brush = new SolidColorBrush(renderTarget, new Color4(r, g, b, a));
+            //renderTarget.DrawGeometry(pathGeometry, pen);
+            renderTarget.FillGeometry(pathGeometry, brush);
             pathGeometry.Dispose();
             geometrySink.Dispose();
         }
 
     };
 
-
-
-    /*
-     * jedinec dle elektrody
-     */
-    class Individual
-    {
-        public int X;
-        public int Y;
-        private int Xdefault;
-        private int Ydefault;
-        public float size;
-        private float sizeDefault;
-        public int old;
-        public float value; // EEG mV
-        public enum type { };
-        private enum direction { UP, RIGHT, DOWN, LEFT };
-        private List<Point> historyPosition = new List<Point>(); // zasobnik hodnot
-        private List<float> historyValue = new List<float>(); // zasobnik hodnot
-        private int historyMax = 5;
-
-        public Individual(int x = 0, int y = 0, float s = 1, float val = 0)
-        {
-            setPosition(x, y);
-            size = s;
-            value = val;
-            // vychozi stavy
-            Xdefault = X;
-            Ydefault = Y;
-            sizeDefault = size;
-        }
-        private void reset()
-        {
-            X = Xdefault;
-            Y = Ydefault;
-            size = sizeDefault;
-        }
-        public void setPosition(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
-        private void setHistoryPosition(Point val)
-        {
-            historyPosition.Add(val);
-            if (historyPosition.Count >= historyMax)
-                historyPosition.RemoveAt(0);
-        }
-        private void setHistoryValue(float val)
-        {
-            historyValue.Add(val);
-            if (historyValue.Count >= historyMax)
-                historyValue.RemoveAt(0);
-        }
-        //private float average()
-        public void grow(float val)
-        {
-            float delta = Math.Abs(value - val);
-            float diff = value - val;
-            Point point = new Point();
-            point.X = X;
-            point.Y = Y;
-            setHistoryPosition(point);
-            setHistoryValue(val);
-
-
-            float av = historyValue.Average();
-
-            /*
-            value = val;
-            size += delta * 1.0002f;
-            if (historyDiff < 0)
-            {
-                if (diff < 0)
-                    move(direction.UP);
-                if (diff > 0)
-                    move(direction.DOWN);
-            }
-            else
-            {
-                if (diff < 0)
-                    move(direction.LEFT);
-                if (diff > 0)
-                    move(direction.RIGHT);
-            }
-            historyDiff = diff;
-             * */
-        }
-        private void move(direction where)
-        {
-            int delda = 1;
-            switch (where)
-            {
-                case direction.UP:
-                    Y -= delda;
-                    break;
-                case direction.RIGHT:
-                    X += delda;
-                    break;
-                case direction.DOWN:
-                    Y += delda;
-                    break;
-                case direction.LEFT:
-                    X -= delda;
-                    break;
-            }
-        }
-    }
 }
