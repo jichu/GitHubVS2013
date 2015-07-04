@@ -35,6 +35,7 @@ namespace __EGG__app_bci_emo_ev3
         private const int NoE = 14; // pocet zobrazenych snimacu
         private const int sleep = 0; // idle time
         private string[] channelNames = new string[14] { "F4", "AF4", "F8", "FC6", "T8", "P8", "O2", "O1", "P7", "T7", "FC5", "F7", "AF3", "F3" };
+        private enum qualityNames { EEG_CQ_NO_SIGNAL, EEG_CQ_VERY_BAD, EEG_CQ_POOR, EEG_CQ_FAIR, EEG_CQ_GOOD };
 
         private Thread renderThread;
         private Factory factory;
@@ -181,21 +182,21 @@ namespace __EGG__app_bci_emo_ev3
         private void dPointSenzor(float x, float y, float radius, string quality)
         {
             Color4 color = new Color4(0, 0, 0, 1);
-            switch (quality)
+            switch ((qualityNames)Enum.Parse(typeof(qualityNames), quality))
             {
-                case "EEG_CQ_NO_SIGNAL":
+                case qualityNames.EEG_CQ_NO_SIGNAL:
                     color = new Color4(0, 0, 0, 1);
                     break;
-                case "EEG_CQ_VERY_BAD":
+                case qualityNames.EEG_CQ_VERY_BAD:
                     color = new Color4(1, 0, 0, 1);
                     break;
-                case "EEG_CQ_POOR":
+                case qualityNames.EEG_CQ_POOR:
                     color = new Color4(1, 0.5f, 0, 1);
                     break;
-                case "EEG_CQ_FAIR":
+                case qualityNames.EEG_CQ_FAIR:
                     color = new Color4(1, 1, 0, 1);
                     break;
-                case "EEG_CQ_GOOD":
+                case qualityNames.EEG_CQ_GOOD:
                     color = new Color4(0, 1, 0, 1);
                     break;
             }
@@ -268,7 +269,7 @@ namespace __EGG__app_bci_emo_ev3
             for (int i = 0; i < NoE; i++)
             {
                 ind[i].grow(data[i]);
-                //dPoint(ind[i].X, ind[i].Y, ind[i].size, ind[i].value);
+                dPoint(ind[i].X, ind[i].Y, ind[i].size, ind[i].value);
                 ind[i].old++;
             }
         }
